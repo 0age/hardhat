@@ -124,15 +124,8 @@ function encodeStackTraceEntry(
     case StackTraceEntryType.DIRECT_LIBRARY_CALL_ERROR:
     case StackTraceEntryType.UNMAPPED_SOLC_0_6_3_REVERT_ERROR:
     case StackTraceEntryType.CONTRACT_TOO_LARGE_ERROR:
-      return sourceReferenceToSolidityCallsite(stackTraceEntry.sourceReference);
-
     case StackTraceEntryType.UNRECOGNIZED_CREATE_CALLSTACK_ENTRY:
-      return new SolidityCallSite(
-        undefined,
-        UNRECOGNIZED_CONTRACT_NAME,
-        CONSTRUCTOR_FUNCTION_NAME,
-        undefined
-      );
+      break;
 
     case StackTraceEntryType.UNRECOGNIZED_CONTRACT_CALLSTACK_ENTRY:
       return new SolidityCallSite(
@@ -151,12 +144,7 @@ function encodeStackTraceEntry(
       );
 
     case StackTraceEntryType.UNRECOGNIZED_CREATE_ERROR:
-      return new SolidityCallSite(
-        undefined,
-        UNRECOGNIZED_CONTRACT_NAME,
-        CONSTRUCTOR_FUNCTION_NAME,
-        undefined
-      );
+      break;
 
     case StackTraceEntryType.UNRECOGNIZED_CONTRACT_ERROR:
       return new SolidityCallSite(
@@ -168,36 +156,25 @@ function encodeStackTraceEntry(
 
     case StackTraceEntryType.INTERNAL_FUNCTION_CALLSTACK_ENTRY:
       return new SolidityCallSite(
-        stackTraceEntry.sourceReference.file.sourceName,
+        stackTraceEntry.sourceReference.sourceName,
         stackTraceEntry.sourceReference.contract,
         `internal@${stackTraceEntry.pc}`,
         undefined
       );
     case StackTraceEntryType.CONTRACT_CALL_RUN_OUT_OF_GAS_ERROR:
-      if (stackTraceEntry.sourceReference !== undefined) {
-        return sourceReferenceToSolidityCallsite(
-          stackTraceEntry.sourceReference
-        );
-      }
-
-      return new SolidityCallSite(
-        undefined,
-        UNRECOGNIZED_CONTRACT_NAME,
-        UNKNOWN_FUNCTION_NAME,
-        undefined
-      );
-
     case StackTraceEntryType.OTHER_EXECUTION_ERROR:
-      if (stackTraceEntry.sourceReference === undefined) {
-        return new SolidityCallSite(
-          undefined,
-          UNRECOGNIZED_CONTRACT_NAME,
-          UNKNOWN_FUNCTION_NAME,
-          undefined
-        );
-      }
+      break;
+  }
 
-      return sourceReferenceToSolidityCallsite(stackTraceEntry.sourceReference);
+  if (stackTraceEntry.sourceReference) {
+    return sourceReferenceToSolidityCallsite(stackTraceEntry.sourceReference);
+  } else {
+    return new SolidityCallSite(
+      undefined,
+      UNRECOGNIZED_CONTRACT_NAME,
+      UNKNOWN_FUNCTION_NAME,
+      undefined
+    );
   }
 }
 
@@ -205,7 +182,7 @@ function sourceReferenceToSolidityCallsite(
   sourceReference: SourceReference
 ): SolidityCallSite {
   return new SolidityCallSite(
-    sourceReference.file.sourceName,
+    sourceReference.sourceName,
     sourceReference.contract,
     sourceReference.function !== undefined
       ? sourceReference.function
